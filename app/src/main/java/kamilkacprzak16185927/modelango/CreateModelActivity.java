@@ -8,11 +8,26 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
+
+import com.google.atap.tangoservice.Tango;
+import com.google.atap.tangoservice.TangoConfig;
+import com.google.atap.tangoservice.TangoErrorException;
 
 public class CreateModelActivity extends AppCompatActivity {
     private Camera mCamera;
     private Preview mPreview;
+
+    private View.OnClickListener mCreateView;
+    private Button mCaptureButton;
+
+    private Tango mTango;
+    private TangoConfig mTangoConfig;
+    private boolean mIsTangoServiceConnected;
+
+
 
 
     @Override
@@ -20,6 +35,29 @@ public class CreateModelActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_model);
         mPreview = new Preview(this.getApplicationContext(),mCamera);
+
+        mTango = new Tango(this.getApplicationContext());
+        mTangoConfig = new TangoConfig();
+        mTangoConfig = mTango.getConfig(TangoConfig.CONFIG_TYPE_CURRENT);
+        mTangoConfig.putBoolean(TangoConfig.KEY_BOOLEAN_DEPTH, true);
+
+        mCaptureButton = (Button) findViewById(R.id.button_capture);
+        mCaptureButton.setOnClickListener(mCreateView);
+        mCreateView = new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                switch(v.getId()){
+                    case R.id.button_capture:
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+
+        mIsTangoServiceConnected = false;
+
         new CameraOpenTask().execute();
     }
 
@@ -76,4 +114,30 @@ public class CreateModelActivity extends AppCompatActivity {
             mCamera = null;
         }
     }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        if(mTango != null){
+            try{
+                mTango.disconnect();
+                mIsTangoServiceConnected = false;
+            }catch(TangoErrorException e){
+                Log.i("Tango error","Tango didn't disconnect properly");
+            }
+        }
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!mIsTangoServiceConnected) {
+            startActivityForResult(
+                    Tango.getRequestPermissionIntent(Tango.PERMISSIONTYPE_MOTION_TRACKING),
+                    Tango.TANGO_INTENT_ACTIVITYCODE);
+        }
+    }
+
+
 }
