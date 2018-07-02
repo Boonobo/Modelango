@@ -11,7 +11,11 @@
         <item name="android:background">@drawable/background</item>
     </style>
 
-
+    <style name ="AppThemeActionBar" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
 
 
 </resources>
