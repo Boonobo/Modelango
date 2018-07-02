@@ -20,6 +20,7 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback{
     private Camera mCamera;
     private List<Camera.Size> mSupportedPreviewSizes;
     private Context mContext;
+    private int width = -1,height = -1;
 
     Preview(Context context, Camera camera){
         super(context);
@@ -57,11 +58,27 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback{
             // ignore: tried to stop a non-existent preview
         }
 
+        setCameraParametres(width,height);
+
+        // Important: Call startPreview() to start updating the preview surface.
+        // Preview must be started before you can take a picture.
+        try {
+            mCamera.setPreviewDisplay(mSurfaceHolder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mCamera.startPreview();
+    }
+
+    private void setCameraParametres(int width, int height) {
+        if(this.width == -1 && this.height == -1){
+           this.width = width;
+           this.height = height;
+        }
         Camera.Parameters parameters = mCamera.getParameters();
         Display display = ((WindowManager)mContext.getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-
         if(display.getRotation() == Surface.ROTATION_0) {
-            parameters.setPreviewSize(height, width);
+            parameters.setPreviewSize(this.height, this.width);
             mCamera.setDisplayOrientation(90);
         }
 
@@ -74,18 +91,9 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback{
         }
 
         if(display.getRotation() == Surface.ROTATION_270) {
-            parameters.setPreviewSize(width, height);
+            parameters.setPreviewSize(this.width, this.height);
             mCamera.setDisplayOrientation(180);
         }
-
-        // Important: Call startPreview() to start updating the preview surface.
-        // Preview must be started before you can take a picture.
-        try {
-            mCamera.setPreviewDisplay(mSurfaceHolder);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        mCamera.startPreview();
     }
 
     @Override
@@ -115,7 +123,7 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback{
             List<Camera.Size> localSizes = mCamera.getParameters().getSupportedPreviewSizes();
             this.setSupportedPreviewSizes(localSizes);
             requestLayout();
-
+            setCameraParametres(-1,-1);
             try {
                 mCamera.setPreviewDisplay(this.getSurfaceHolder());
             } catch (IOException e) {
