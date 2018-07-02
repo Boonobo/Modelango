@@ -21,7 +21,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".CreateModelActivity" />
+
+        <activity android:name=".CreateModelActivity"
+            android:screenOrientation="sensor"/>
+
         <activity android:name=".GalleryActivity"
             android:theme="@style/AppThemeActionBar"
             android:label="Gallery"
