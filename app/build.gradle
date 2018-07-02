@@ -4,7 +4,7 @@ android {
     compileSdkVersion 27
     defaultConfig {
         applicationId "kamilkacprzak16185927.modelango"
-        minSdkVersion 15
+        minSdkVersion 19
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
@@ -20,7 +20,10 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.aar'])
     implementation files("libs/tango_java_lib.jar")
+    implementation files("libs/tango_support_java_lib.aar")
+    implementation files("libs/tango_ux_support_library.aar")
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     testImplementation 'junit:junit:4.12'
