@@ -1,6 +1,7 @@
 package kamilkacprzak16185927.modelango;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.AsyncTask;
@@ -26,6 +27,8 @@ import com.google.atap.tangoservice.TangoPoseData;
 import com.projecttango.tangosupport.TangoPointCloudManager;
 import com.projecttango.tangosupport.TangoSupport;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 public class CreateModelActivity extends AppCompatActivity {
@@ -107,8 +110,16 @@ public class CreateModelActivity extends AppCompatActivity {
     }
 
     private void saveData(TangoPointCloudData mPointCloudData) {
-        if(mPointCloudData != null) Log.i(TAG,mPointCloudData.toString());
-        //todo 
+        String stamp = "ML_"+String.valueOf(mPointCloudData.timestamp);
+        File file = new File(this.getApplicationContext().getFilesDir(),stamp);
+        FileOutputStream fos;
+        try{
+            fos = openFileOutput(stamp, Context.MODE_PRIVATE);
+            fos.write(mPointCloudData.toString().getBytes());
+            fos.close();
+        }catch(Exception e){
+
+        }
     }
 
     private void bindTangoService() {
