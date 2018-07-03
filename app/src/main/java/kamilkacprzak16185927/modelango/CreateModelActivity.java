@@ -114,7 +114,7 @@ public class CreateModelActivity extends AppCompatActivity {
     }
 
     private void saveData(TangoPointCloudData mPointCloudData) {
-        Log.i("File output",mPointCloudData.toString());
+        RenderCloud.TPCD = mPointCloudData;
         String stamp = "ML_"+String.valueOf(mPointCloudData.timestamp);
         File file = new File(this.getApplicationContext().getFilesDir(),stamp);
         FileOutputStream fos;

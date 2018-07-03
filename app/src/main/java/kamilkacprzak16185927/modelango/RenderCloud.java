@@ -35,6 +35,7 @@ public class RenderCloud extends AppCompatActivity {
     private String line;
     private RajawaliSurfaceView mSurfaceView;
     private PointCloudRajawaliRenderer mRenderer;
+    public static TangoPointCloudData TPCD;
     private int mDisplayRotation = 0;
 
     @Override
@@ -68,7 +69,7 @@ public class RenderCloud extends AppCompatActivity {
         }
 
         mSurfaceView = (RajawaliSurfaceView) findViewById(R.id.gl_surface_view);
-        mRenderer = new PointCloudRajawaliRenderer(this);
+        mRenderer = new PointCloudRajawaliRenderer(this.getApplicationContext());
         setupRenderer();
         DisplayManager displayManager = (DisplayManager) getSystemService(DISPLAY_SERVICE);
         if (displayManager != null) {
@@ -99,7 +100,12 @@ public class RenderCloud extends AppCompatActivity {
                 // OpenGL rendering thread.
 
                 // Prevent concurrent access from a service disconnect through the onPause event.
-                    TangoPointCloudData pointCloud = mTPCD;
+                synchronized (RenderCloud.this) {
+                    // Don't execute any Tango API actions if we're not connected to the service.
+
+
+                    // Update point cloud data.
+                    TangoPointCloudData pointCloud = TPCD;
                     if (pointCloud != null) {
                         // Calculate the depth camera pose at the last point cloud update.
                         TangoSupport.TangoMatrixTransformData transform =
@@ -116,22 +122,22 @@ public class RenderCloud extends AppCompatActivity {
 
                     // Update current camera pose.
                     try {
-                        // Calculate the device pose. This transform is used to display
-                        // frustum in third and top down view, and used to render camera pose in
-                        // first person view.
-                        TangoPoseData lastFramePose = TangoSupport.getPoseAtTime(0,
-                                TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
-                                TangoPoseData.COORDINATE_FRAME_DEVICE,
-                                TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
-                                TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
-                                mDisplayRotation);
-                        if (lastFramePose.statusCode == TangoPoseData.POSE_VALID) {
-                            mRenderer.updateCameraPose(lastFramePose);
-                        }
+//                         Calculate the device pose. This transform is used to display
+//                         frustum in third and top down view, and used to render camera pose in
+//                         first person view.
+//                        TangoPoseData lastFramePose = TangoSupport.getPoseAtTime(0,
+//                                TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
+//                                TangoPoseData.COORDINATE_FRAME_DEVICE,
+//                                TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
+//                                TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
+//                                mDisplayRotation);
+//                        if (lastFramePose.statusCode == TangoPoseData.POSE_VALID) {
+//                            mRenderer.updateCameraPose(lastFramePose);
+//                        }
                     } catch (TangoErrorException e) {
-                        Log.e("Renderuje", "Could not get valid transform");
+                        Log.e("render", "Could not get valid transform");
                     }
-
+                }
             }
 
             @Override
@@ -152,6 +158,9 @@ public class RenderCloud extends AppCompatActivity {
         mSurfaceView.setSurfaceRenderer(mRenderer);
     }
 
+    public void onTopDownClicked(View v) {
+        mRenderer.setTopDownView();
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
