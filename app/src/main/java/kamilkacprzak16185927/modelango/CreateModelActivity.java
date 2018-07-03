@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.Parcel;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,7 +30,10 @@ import com.projecttango.tangosupport.TangoSupport;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
+
+import static junit.framework.Assert.assertEquals;
 
 public class CreateModelActivity extends AppCompatActivity {
     private static final String TAG = CreateModelActivity.class.getSimpleName();
@@ -110,13 +114,21 @@ public class CreateModelActivity extends AppCompatActivity {
     }
 
     private void saveData(TangoPointCloudData mPointCloudData) {
+        Log.i("File output",mPointCloudData.toString());
         String stamp = "ML_"+String.valueOf(mPointCloudData.timestamp);
         File file = new File(this.getApplicationContext().getFilesDir(),stamp);
         FileOutputStream fos;
         try{
             fos = openFileOutput(stamp, Context.MODE_PRIVATE);
-            fos.write(mPointCloudData.toString().getBytes());
-            fos.close();
+            final Parcel p1 = Parcel.obtain();
+            final byte[] bytes;
+            p1.writeValue(mPointCloudData);
+            bytes = p1.marshall();
+            assertEquals(4,bytes[0]);
+            fos.write(bytes);
+            p1.recycle();
+            //fos.write(mPointCloudData.toString().tochar);
+            //fos.write(mPointCloudData.describeContents());
         }catch(Exception e){
 
         }
@@ -185,11 +197,14 @@ public class CreateModelActivity extends AppCompatActivity {
                 final double pointCloudFrameDelta =
                         (currentTimeStamp - mPointCloudPreviousTimeStamp) * SECS_TO_MILLISECS;
                 mPointCloudPreviousTimeStamp = currentTimeStamp;
+                final double averageDepth = getAveragedDepth(pointCloud.points,
+                        pointCloud.numPoints);
 
                 mPointCloudTimeToNextUpdate -= pointCloudFrameDelta;
 
                 if (mPointCloudTimeToNextUpdate < 0.0) {
                     mPointCloudTimeToNextUpdate = UPDATE_INTERVAL_MS;
+                    final String pointCountString = Integer.toString(pointCloud.numPoints);
                 }
             }
 
@@ -283,4 +298,16 @@ public class CreateModelActivity extends AppCompatActivity {
         });
     }
 
+    private float getAveragedDepth(FloatBuffer pointCloudBuffer, int numPoints) {
+        float totalZ = 0;
+        float averageZ = 0;
+        if (numPoints != 0) {
+            int numFloats = 4 * numPoints;
+            for (int i = 2; i < numFloats; i = i + 4) {
+                totalZ = totalZ + pointCloudBuffer.get(i);
+            }
+            averageZ = totalZ / numPoints;
+        }
+        return averageZ;
+    }
 }
